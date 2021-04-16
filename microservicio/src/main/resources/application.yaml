@@ -1,0 +1,23 @@
+jasypt:
+   encryptor:
+      password: ${jasyptpwd:secretkey}
+      algorithm: PBEWithMD5AndDES
+
+server:
+   port: 8033
+   servlet:
+      context-path: /adn_fernandorugeles
+      session:
+         timeout: 21600s
+
+spring:
+    datasource:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.zaxxer.hikari.HikariDataSource
+      jdbcUrl: jdbc:mysql://localhost:3306/microservicio?autoReconnect=true&useSSL=FALSE
+      username: root
+      password: root
+      hikari:
+         poolName: pool
+
+    
