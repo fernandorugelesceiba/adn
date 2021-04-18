@@ -18,7 +18,7 @@ public class Cliente {
     private static final String SE_DEBE_INGRESAR_UN_TIPO_DE_DOCUMENTO = "Se debe ingresar el tipo de documento";
     private static final String SE_DEBE_INGRESAR_UN_NUMERO_DE_DOCUMENTO = "Se debe ingresar el numero de documento";
     private static final String SE_DEBE_INGRESAR_EL_APELLIDO_DEL_CLIENTE = "Se debe ingresar el apellido de cliente";
-    private static final String SE_DEBE_INGRESAR_USUARIO_DE_CREACION = "Se debe ingresar un usuario de creación";
+    private static final String SE_DEBE_INGRESAR_USUARIO_DE_CREACION = "Se debe ingresar un usuario de creaciÃ³n";
     private static final int LONGITUD_MINIMA_CLAVE = 4;
 
     private Long id;
