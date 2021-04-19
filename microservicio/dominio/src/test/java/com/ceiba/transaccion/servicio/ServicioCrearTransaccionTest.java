@@ -24,7 +24,7 @@ public class ServicioCrearTransaccionTest {
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
 	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
-
+	private static final String SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD = "El total de sus transacciones en este mes, superan el monto permitido impuesto por la entidad";
 	@Test
 	public void verificarQueLaCuentaLleveUnDiaDeCreadaTest() {
 
@@ -176,14 +176,14 @@ public class ServicioCrearTransaccionTest {
 	@Test
 	public void verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMesTest() {
 		// arrange
-		Double valorTotalDeTransacciones = 100D;
+		Double valorTotalDeTransacciones = 1000000000D;
 		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
 		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
 		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
 				repositorioCuenta);
 
 		// act - assert
-		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen),
-				ExcepcionDuplicidad.class, UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
+		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones),
+				ExcepcionDuplicidad.class, SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD);
 	}
 }
