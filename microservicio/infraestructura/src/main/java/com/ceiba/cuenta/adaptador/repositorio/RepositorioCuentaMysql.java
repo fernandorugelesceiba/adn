@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.ceiba.cliente.adaptador.dao.MapeoCliente;
 import com.ceiba.cuenta.adaptador.dao.MapeoCuenta;
 import com.ceiba.cuenta.modelo.dto.DtoCuenta;
 import com.ceiba.cuenta.modelo.entidad.Cuenta;

@@ -2,14 +2,11 @@ package com.ceiba.transaccion.adaptador.repositorio;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.ceiba.cuenta.modelo.entidad.Cuenta;
 import com.ceiba.infraestructura.jdbc.CustomNamedParameterJdbcTemplate;
 import com.ceiba.infraestructura.jdbc.sqlstatement.SqlStatement;
 import com.ceiba.transaccion.modelo.entidad.Transaccion;
@@ -58,7 +55,7 @@ public class RepositorioTransaccionMysql implements RepositorioTransaccion {
 		String resultado = this.customNamedParameterJdbcTemplate.getNamedParameterJdbcTemplate()
 				.queryForObject(sqlObtenerCantidadDeTransaccionesSegunCuentaEnElMes, paramSource, String.class);
 		
-		List<Double> listaValoresDeTransaccion = new ArrayList<Double>();
+		List<Double> listaValoresDeTransaccion = new ArrayList<>();
 		String[] valoresDeTransaccion = resultado.split(",");
 		for(String valor : valoresDeTransaccion) {
 			listaValoresDeTransaccion.add(new BigDecimal(valor.length() > 0 ? valor.length() : 0).doubleValue());

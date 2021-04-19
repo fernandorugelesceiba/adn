@@ -13,7 +13,6 @@ public class DtoCliente {
     private String apellido;
     private Short tipoDocumento;
     private String numeroDocumento;
-    //private String Clave;
     private LocalDateTime fechaCreacion;
     private Long idUsuarioCreacion;
 }

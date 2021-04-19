@@ -44,7 +44,7 @@ public class Cliente {
         this.nombre = nombre;
         this.apellido = apellido;
         this.tipoDocumento = tipoDocumento;
-        this.numeroDocumento = numeroDocumento;;
+        this.numeroDocumento = numeroDocumento;
         this.clave = clave;
         this.fechaCreacion = fechaCreacion;
         this.idUsuarioCreacion = idUsuarioCreacion;

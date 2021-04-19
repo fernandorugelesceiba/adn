@@ -19,7 +19,6 @@ public class MapeoCliente implements RowMapper<DtoCliente>, MapperResult {
         String numeroDocumento = resultSet.getString("numero_documento");
         String nombre = resultSet.getString("nombre");
         String apellido = resultSet.getString("apellido");
-        //String clave = resultSet.getString("clave");
         LocalDateTime fecha = extraerLocalDateTime(resultSet, "fecha_creacion");
         Long idUsuarioCreacion = resultSet.getLong("id_usuario_creacion");
 

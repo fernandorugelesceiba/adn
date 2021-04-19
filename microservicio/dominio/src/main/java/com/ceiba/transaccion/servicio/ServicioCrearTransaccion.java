@@ -13,7 +13,6 @@ import com.ceiba.transaccion.puerto.repositorio.RepositorioTransaccion;
 
 public class ServicioCrearTransaccion {
 	private static final String LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA = "Lo sentimos por el momento no se pueden realizar transacciones, las cuentas deben llevar mas de un dia de creadas ya que por temas de validacion la entidad lo exige";
-	private static final String SE_ENCONTRO_QUE_EL_MONTO_TRANSFERIDO_SUPERA_EL_MONTO_EN_SU_CUENTA = "se encontro que el monto transferido supera el monto en su cuenta";
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
 	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
