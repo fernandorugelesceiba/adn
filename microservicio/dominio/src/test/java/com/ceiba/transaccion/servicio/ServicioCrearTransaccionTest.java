@@ -75,11 +75,15 @@ public class ServicioCrearTransaccionTest {
 	@Test
 	public void obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotalTest() {
 		// arrange
-		List<Double> lista = new ArrayList<>();
+		List<Double> listaEsperada = new ArrayList<>();
+		listaEsperada.add(0.5);
+		listaEsperada.add(300D);
+		listaEsperada.add(100D);
+
 		Transaccion transaccion = new TransaccionTestDataBuilder().build();
 		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
 		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
-		Mockito.when(repositorioTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen())).thenReturn(lista);
+		Mockito.when(repositorioTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen())).thenReturn(listaEsperada);
 		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
 				repositorioCuenta);
 
@@ -87,7 +91,7 @@ public class ServicioCrearTransaccionTest {
 		List<Double> resultado = servicioCrearTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen());
 
 		// assert
-		Assert.assertEquals(lista, resultado);
+		Assert.assertEquals(listaEsperada, resultado);
 	}
 
 	@Test
@@ -185,5 +189,38 @@ public class ServicioCrearTransaccionTest {
 		// act - assert
 		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones),
 				ExcepcionDuplicidad.class, SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD);
+	}
+
+
+	@Test
+	public void verificarFechaValidesEnCuentaTest() {
+
+		// arrange
+		boolean respuestaEsperada = false;
+		Transaccion transaccion = new TransaccionTestDataBuilder().build();
+		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
+
+		// act
+		boolean resultado = repositorioTransaccion.verificarFechaValidesEnCuenta(transaccion.getIdCuentaDestino());
+
+		// assert
+		Assert.assertEquals(respuestaEsperada, resultado);
+	}
+
+
+	@Test
+	public void obtenerElMontoMaximoDeUnCuentaSegunSuIdTest() {
+
+		// arrange
+		Double respuestaEsperada = 200000D;
+		Transaccion transaccion = new TransaccionTestDataBuilder().build();
+		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
+		Mockito.when(repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaDestino())).thenReturn(respuestaEsperada);
+
+		// act
+		Double resultado = repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaDestino());
+
+		// assert
+		Assert.assertEquals(respuestaEsperada, resultado);
 	}
 }

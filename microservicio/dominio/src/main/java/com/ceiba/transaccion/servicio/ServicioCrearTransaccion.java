@@ -42,7 +42,7 @@ public class ServicioCrearTransaccion {
 
 	protected void verficarQueLaCuentaLleveUnDiaDeCreada(Long idCuenta) {
 		boolean esValido = this.repositorioTransaccion.verificarFechaValidesEnCuenta(idCuenta);
-		if (!esValido) {
+		if (esValido == false) {
 			throw new ExcepcionDuplicidad(LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA);
 		}
 	}
