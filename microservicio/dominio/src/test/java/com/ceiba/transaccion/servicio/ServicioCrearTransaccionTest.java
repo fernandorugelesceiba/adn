@@ -147,7 +147,7 @@ public class ServicioCrearTransaccionTest {
 	}
 
 	@Test
-	public void verficarQueLaCuentaLleveUnDiaDeCreadaRetornaFalseTest() {
+	public void verficarQueLaCuentaLleveUnDiaDeCreadaTest() {
 		// arrange
 		Transaccion transaccion = new TransaccionTestDataBuilder().build();
 		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
