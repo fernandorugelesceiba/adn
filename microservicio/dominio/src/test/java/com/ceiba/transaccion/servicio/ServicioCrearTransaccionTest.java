@@ -24,7 +24,7 @@ public class ServicioCrearTransaccionTest {
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
 	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
-	private static final String SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD = "El total de sus transacciones en este mes, superan el monto permitido impuesto por la entidad";
+
 	@Test
 	public void verificarQueLaCuentaLleveUnDiaDeCreadaTest() {
 
@@ -59,7 +59,41 @@ public class ServicioCrearTransaccionTest {
 				transaccion.getIdCuentaOrigen())).thenReturn(lista);
 
 		Mockito.doNothing().when(servicioCrearTransaccionMock).verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(
-				transaccion.getIdCuentaOrigen(), 100D);
+				transaccion.getIdCuentaOrigen(), valorTotalDeTransacciones);
+		Mockito.when(repositorioTransaccion.verificarFechaValidesEnCuenta(Mockito.anyLong())).thenReturn(false);
+		Mockito.when(repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaOrigen())).thenReturn(500D);
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
+				repositorioCuenta);
+
+		// act
+		Transaccion resultado = servicioCrearTransaccion.crearValorPorcentajeDeTransaccion(transaccion);
+
+		// assert
+		Assert.assertEquals(valorTransaccionResultado, resultado.getValorTransaccion());
+	}
+
+	@Test
+	public void crearValorPorcentajeDeTransaccionLLenandoListaTest() {
+		// arrange
+		Double valorTransaccionResultado = 99.5D;
+		Double valorTotalDeTransacciones = 100D;
+		List<Double> lista = new ArrayList<>();
+		lista.add(100D);
+		lista.add(200D);
+
+		Transaccion transaccion = new TransaccionTestDataBuilder().build();
+		ServicioCrearTransaccion servicioCrearTransaccionMock = Mockito.mock(ServicioCrearTransaccion.class);
+		Transaccion transaccionMock = Mockito.mock(Transaccion.class);
+		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
+		Mockito.when(servicioCrearTransaccionMock.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(
+				transaccion.getIdCuentaOrigen())).thenReturn(lista);
+		Mockito.when(transaccionMock.getIdCuentaOrigen()).thenReturn(transaccion.getIdCuentaOrigen());
+		Mockito.when(transaccionMock.getValorTransaccion()).thenReturn(transaccion.getValorTransaccion());
+
+
+		Mockito.doNothing().when(servicioCrearTransaccionMock).verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(
+				transaccion.getIdCuentaOrigen(), valorTotalDeTransacciones);
 		Mockito.when(repositorioTransaccion.verificarFechaValidesEnCuenta(Mockito.anyLong())).thenReturn(false);
 		Mockito.when(repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaOrigen())).thenReturn(500D);
 		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
@@ -147,7 +181,7 @@ public class ServicioCrearTransaccionTest {
 	}
 
 	@Test
-	public void verficarQueLaCuentaLleveUnDiaDeCreadaTest() {
+	public void verficarQueLaCuentaLleveUnDiaDeCreadaRetornaFalseTest() {
 		// arrange
 		Transaccion transaccion = new TransaccionTestDataBuilder().build();
 		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
@@ -160,7 +194,6 @@ public class ServicioCrearTransaccionTest {
 		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verficarQueLaCuentaLleveUnDiaDeCreada(transaccion.getIdCuentaOrigen()),
 				ExcepcionDuplicidad.class, LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA);
 	}
-
 
 	@Test
 	public void verificarSaldosNegativosTest() {

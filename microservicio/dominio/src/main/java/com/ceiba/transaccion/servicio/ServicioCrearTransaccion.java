@@ -64,9 +64,7 @@ public class ServicioCrearTransaccion {
 		BigDecimal valorTotalDeTransacciones;
 		BigDecimal nuevoValorDelMonto;
 
-		valorTotalDeTransacciones = cantidadTransaccionesEnTreintaDias.isEmpty()
-				? new BigDecimal(0)
-				: BigDecimal.valueOf(cantidadTransaccionesEnTreintaDias.stream().flatMapToDouble(DoubleStream::of).sum());
+		valorTotalDeTransacciones = BigDecimal.valueOf(cantidadTransaccionesEnTreintaDias.stream().flatMapToDouble(DoubleStream::of).sum());
 
 		this.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones.doubleValue());
 
