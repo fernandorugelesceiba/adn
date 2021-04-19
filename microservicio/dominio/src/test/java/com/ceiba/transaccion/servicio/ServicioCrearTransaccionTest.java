@@ -73,40 +73,6 @@ public class ServicioCrearTransaccionTest {
 	}
 
 	@Test
-	public void crearValorPorcentajeDeTransaccionLLenandoListaTest() {
-		// arrange
-		Double valorTransaccionResultado = 99.5D;
-		Double valorTotalDeTransacciones = 100D;
-		List<Double> lista = new ArrayList<>();
-		lista.add(100D);
-		lista.add(200D);
-
-		Transaccion transaccion = new TransaccionTestDataBuilder().build();
-		ServicioCrearTransaccion servicioCrearTransaccionMock = Mockito.mock(ServicioCrearTransaccion.class);
-		Transaccion transaccionMock = Mockito.mock(Transaccion.class);
-		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
-		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
-		Mockito.when(servicioCrearTransaccionMock.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(
-				transaccion.getIdCuentaOrigen())).thenReturn(lista);
-		Mockito.when(transaccionMock.getIdCuentaOrigen()).thenReturn(transaccion.getIdCuentaOrigen());
-		Mockito.when(transaccionMock.getValorTransaccion()).thenReturn(transaccion.getValorTransaccion());
-
-
-		Mockito.doNothing().when(servicioCrearTransaccionMock).verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(
-				transaccion.getIdCuentaOrigen(), valorTotalDeTransacciones);
-		Mockito.when(repositorioTransaccion.verificarFechaValidesEnCuenta(Mockito.anyLong())).thenReturn(false);
-		Mockito.when(repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaOrigen())).thenReturn(500D);
-		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
-				repositorioCuenta);
-
-		// act
-		Transaccion resultado = servicioCrearTransaccion.crearValorPorcentajeDeTransaccion(transaccion);
-
-		// assert
-		Assert.assertEquals(valorTransaccionResultado, resultado.getValorTransaccion());
-	}
-
-	@Test
 	public void obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotalTest() {
 		// arrange
 		List<Double> listaEsperada = new ArrayList<>();
