@@ -23,6 +23,7 @@ public class ServicioCrearTransaccionTest {
 	private static final String LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA = "Lo sentimos por el momento no se pueden realizar transacciones, las cuentas deben llevar mas de un dia de creadas ya que por temas de validacion la entidad lo exige";
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
+	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
 
 	@Test
 	public void verificarQueLaCuentaLleveUnDiaDeCreadaTest() {
@@ -45,6 +46,7 @@ public class ServicioCrearTransaccionTest {
 	public void crearValorPorcentajeDeTransaccionTest() {
 		// arrange
 		Double valorTransaccionResultado = 99.5D;
+		Double valorTotalDeTransacciones = 100D;
 		List<Double> lista = new ArrayList<>();
 		Transaccion transaccion = new TransaccionTestDataBuilder().build();
 		ServicioCrearTransaccion servicioCrearTransaccionMock = Mockito.mock(ServicioCrearTransaccion.class);
@@ -55,6 +57,7 @@ public class ServicioCrearTransaccionTest {
 		Mockito.when(transaccionMock.getValorTransaccion()).thenReturn(transaccion.getValorTransaccion());
 		Mockito.when(servicioCrearTransaccionMock.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(
 				transaccion.getIdCuentaOrigen())).thenReturn(lista);
+
 		Mockito.doNothing().when(servicioCrearTransaccionMock).verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(
 				transaccion.getIdCuentaOrigen(), 100D);
 		Mockito.when(repositorioTransaccion.verificarFechaValidesEnCuenta(Mockito.anyLong())).thenReturn(false);
@@ -152,5 +155,35 @@ public class ServicioCrearTransaccionTest {
 		// act - assert
 		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verficarQueLaCuentaLleveUnDiaDeCreada(transaccion.getIdCuentaOrigen()),
 				ExcepcionDuplicidad.class, LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA);
+	}
+
+
+	@Test
+	public void verificarSaldosNegativosTest() {
+		// arrange
+		Double nuevoMontoParaCuentaDestino = -100D;
+		Double nuevoMontoParaCuentaOrigen = -100D;
+		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
+				repositorioCuenta);
+
+		// act - assert
+		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verificarSaldosNegativos(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen),
+				ExcepcionDuplicidad.class, UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
+	}
+
+	@Test
+	public void verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMesTest() {
+		// arrange
+		Double valorTotalDeTransacciones = 100D;
+		RepositorioTransaccion repositorioTransaccion = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuenta = Mockito.mock(RepositorioCuenta.class);
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccion,
+				repositorioCuenta);
+
+		// act - assert
+		BasePrueba.assertThrows(() -> servicioCrearTransaccion.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen),
+				ExcepcionDuplicidad.class, UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
 	}
 }

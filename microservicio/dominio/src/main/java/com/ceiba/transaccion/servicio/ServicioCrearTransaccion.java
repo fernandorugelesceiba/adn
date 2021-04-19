@@ -16,6 +16,8 @@ public class ServicioCrearTransaccion {
 	private static final String SE_ENCONTRO_QUE_EL_MONTO_TRANSFERIDO_SUPERA_EL_MONTO_EN_SU_CUENTA = "se encontro que el monto transferido supera el monto en su cuenta";
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
+	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
+	private static final String SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD = "El total de sus transacciones en este mes, superan el monto permitido impuesto por la entidad";
 
 	private final RepositorioTransaccion repositorioTransaccion;
 	private final RepositorioCuenta repositorioCuenta;
@@ -67,6 +69,8 @@ public class ServicioCrearTransaccion {
 				? new BigDecimal(0)
 				: BigDecimal.valueOf(cantidadTransaccionesEnTreintaDias.stream().flatMapToDouble(DoubleStream::of).sum());
 
+		this.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones.doubleValue());
+
 		valorTotalDeTransacciones = valorTotalDeTransacciones.add(BigDecimal.valueOf(transaccion.getValorTransaccion()));
 
 		valorProcentanjeTransacciones = this.conocerValorPorcentajeDeTransaccion(cantidadTransaccionesEnTreintaDias);
@@ -115,14 +119,20 @@ public class ServicioCrearTransaccion {
 		}
 	}
 
-	private void verificarSaldosNegativos(Double nuevoMontoParaCuentaDestino, Double nuevoMontoParaCuentaOrigen) {
+	protected void verificarSaldosNegativos(Double nuevoMontoParaCuentaDestino, Double nuevoMontoParaCuentaOrigen) {
 		if (nuevoMontoParaCuentaDestino < 0 || nuevoMontoParaCuentaOrigen < 0) {
-			throw new ExcepcionDuplicidad(SE_ENCONTRO_QUE_EL_MONTO_TRANSFERIDO_SUPERA_EL_MONTO_EN_SU_CUENTA);
+			throw new ExcepcionDuplicidad(UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
+		}
+	}
+
+	protected void verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(Double valorTotalDeTransacciones) {
+		if (valorTotalDeTransacciones > 2000000) {
+			throw new ExcepcionDuplicidad(SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD);
 		}
 	}
 
 	protected BigDecimal conocerValorPorcentajeDeTransaccion(List<Double> cantidadTransaccionesEnTreintaDias){
-		if (cantidadTransaccionesEnTreintaDias.size() > 5) {
+		if (cantidadTransaccionesEnTreintaDias.size() > 4) {
 			return BigDecimal.valueOf(1);
 		} else {
 			return BigDecimal.valueOf(0.5);
