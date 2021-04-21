@@ -1,9 +1,5 @@
 package com.ceiba.transaccion.servicio;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.DoubleStream;
-
 import com.ceiba.cuenta.modelo.dto.DtoCuenta;
 import com.ceiba.cuenta.modelo.entidad.Cuenta;
 import com.ceiba.cuenta.puerto.repositorio.RepositorioCuenta;
@@ -11,83 +7,106 @@ import com.ceiba.dominio.excepcion.ExcepcionDuplicidad;
 import com.ceiba.transaccion.modelo.entidad.Transaccion;
 import com.ceiba.transaccion.puerto.repositorio.RepositorioTransaccion;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+import java.util.stream.DoubleStream;
+
 public class ServicioCrearTransaccion {
 	private static final String LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA = "Lo sentimos por el momento no se pueden realizar transacciones, las cuentas deben llevar mas de un dia de creadas ya que por temas de validacion la entidad lo exige";
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION = "Ocurrio un error durante el proceso de actualiación";
-	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
-	private static final String SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD = "El total de sus transacciones en este mes, superan el monto permitido impuesto por la entidad";
 
 	private final RepositorioTransaccion repositorioTransaccion;
 	private final RepositorioCuenta repositorioCuenta;
 
-	public ServicioCrearTransaccion(RepositorioTransaccion repositorioTransaccion,
-			RepositorioCuenta repositorioCuenta) {
+	public ServicioCrearTransaccion(
+			RepositorioTransaccion repositorioTransaccion,
+			RepositorioCuenta repositorioCuenta
+	) {
 		this.repositorioTransaccion = repositorioTransaccion;
 		this.repositorioCuenta = repositorioCuenta;
 	}
 
 	public Long ejecutar(Transaccion transaccion) {
-		this.verficarQueLaCuentaLleveUnDiaDeCreada(transaccion.getIdCuentaOrigen());
-		this.verficarQueLaCuentaLleveUnDiaDeCreada(transaccion.getIdCuentaDestino());
+		this.verficarQueLaCuentaLleveUnDiaDeCreada(
+				transaccion.getIdCuentaOrigen(),
+				transaccion.getIdCuentaDestino()
+		);
 
-		Transaccion transaccionConValorProcentajeDeTransaccion = this.crearValorPorcentajeDeTransaccion(transaccion);
+		this.crearValorPorcentajeTransaccion(transaccion);
 
-		Long idTransaccion = this.repositorioTransaccion.crear(transaccionConValorProcentajeDeTransaccion);
+		Long idTransaccion = this.repositorioTransaccion.crear(transaccion);
 		// actualizar los nuevos montos de los saldos
-		this.ejecutarActualizacionDeMontosEnCuentas(transaccion, transaccionConValorProcentajeDeTransaccion);
-
+		this.ejecutarActualizacionDeMontosEnCuentas(transaccion, transaccion);
 		return idTransaccion;
 	}
 
-	protected void verficarQueLaCuentaLleveUnDiaDeCreada(Long idCuenta) {
-		boolean esValido = this.repositorioTransaccion.verificarFechaValidesEnCuenta(idCuenta);
-		if (!esValido) {
+	private void crearValorPorcentajeTransaccion(Transaccion transaccion) {
+		LocalDateTime fechaInicio = transaccion.getFechaCreacion().with(TemporalAdjusters.firstDayOfMonth());
+		LocalDateTime fechaFin = transaccion.getFechaCreacion().with(TemporalAdjusters.lastDayOfMonth());
+
+		List<Double> cantidadTransaccionesMesual =
+				this.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(
+						transaccion.getIdCuentaOrigen(),
+						fechaInicio,
+						fechaFin
+				);
+
+        BigDecimal valorTotalDeTransacciones = BigDecimal.valueOf(
+				cantidadTransaccionesMesual.stream()
+								.flatMapToDouble(DoubleStream::of).sum());
+
+		transaccion.verificarQueSaltoTotalDeTransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones.doubleValue());
+
+		valorTotalDeTransacciones =
+				valorTotalDeTransacciones.add(BigDecimal.valueOf(transaccion.getValorTransaccion()));
+
+        BigDecimal valorProcentanjeTransacciones =
+				transaccion.conocerValorPorcentajeDeTransaccion(cantidadTransaccionesMesual);
+
+		BigDecimal valorADescontar = BigDecimal.valueOf(
+				transaccion.getValorTransaccion())
+				.multiply(valorProcentanjeTransacciones)
+				.divide(new BigDecimal(100));
+
+        BigDecimal nuevoValorDelMonto = BigDecimal.valueOf(transaccion.getValorTransaccion()).subtract(valorADescontar);
+		this.verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(transaccion.getIdCuentaOrigen(),
+				valorTotalDeTransacciones.doubleValue());
+
+		transaccion.conNuevoMontoYNuevoPorcentajeTransaccion(nuevoValorDelMonto.doubleValue(), valorProcentanjeTransacciones.doubleValue());
+	}
+
+	private void verficarQueLaCuentaLleveUnDiaDeCreada(Long idCuentaOrigen, Long idCuentaDestino) {
+		boolean esValidaParaCuentaOrigen = this.repositorioTransaccion.verificarFechaValidesEnCuenta(idCuentaOrigen);
+		boolean esValidaParaCuentaDestino = this.repositorioTransaccion.verificarFechaValidesEnCuenta(idCuentaDestino);
+		if (!esValidaParaCuentaOrigen || !esValidaParaCuentaDestino) {
 			throw new ExcepcionDuplicidad(LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA);
 		}
 	}
 
-	protected void verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(Long idCuentaDestino,
-			Double montoTotalTransaccion) {
-		Double montoMaximoPermitido = this.repositorioTransaccion
-				.obtenerElMontoMaximoDeUnCuentaSegunSuId(idCuentaDestino);
+	private void verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(
+			Long idCuentaOrigen,
+			Double montoTotalTransaccion
+	) {
+
+
+		Double montoMaximoPermitido =
+				this.repositorioTransaccion.obtenerElMontoMaximoDeUnCuentaSegunSuId(idCuentaOrigen);
 		if (montoTotalTransaccion > montoMaximoPermitido) {
 			throw new ExcepcionDuplicidad(
 					EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA);
 		}
 	}
 
-	protected Transaccion crearValorPorcentajeDeTransaccion(Transaccion transaccion) {
-		List<Double> cantidadTransaccionesEnTreintaDias = this
-				.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen());
-		BigDecimal valorProcentanjeTransacciones;
-		BigDecimal valorTotalDeTransacciones;
-		BigDecimal nuevoValorDelMonto;
 
-		valorTotalDeTransacciones = BigDecimal.valueOf(cantidadTransaccionesEnTreintaDias.stream().flatMapToDouble(DoubleStream::of).sum());
 
-		this.verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(valorTotalDeTransacciones.doubleValue());
-
-		valorTotalDeTransacciones = valorTotalDeTransacciones.add(BigDecimal.valueOf(transaccion.getValorTransaccion()));
-
-		valorProcentanjeTransacciones = this.conocerValorPorcentajeDeTransaccion(cantidadTransaccionesEnTreintaDias);
-
-		BigDecimal valorADescontar = BigDecimal.valueOf(transaccion.getValorTransaccion())
-				.multiply(valorProcentanjeTransacciones).divide(new BigDecimal(100));
-		nuevoValorDelMonto = BigDecimal.valueOf(transaccion.getValorTransaccion()).subtract(valorADescontar);
-		this.verificarMontoTotalDeLasTransaccionesSegunELMontoMaximoDeLaCuenta(transaccion.getIdCuentaOrigen(),
-				valorTotalDeTransacciones.doubleValue());
-
-		return new Transaccion(transaccion.getId(),
-				transaccion.getIdCuentaOrigen(), transaccion.getIdCuentaDestino(), nuevoValorDelMonto.doubleValue(),
-				valorProcentanjeTransacciones.doubleValue(), transaccion.getFechaCreacion(), transaccion.getEstado());
+	private List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+		return this.repositorioTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(idCuenta, fechaInicio, fechaFin);
 	}
 
-	protected List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta) {
-		return this.repositorioTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(idCuenta);
-	}
-
-	protected void ejecutarActualizacionDeMontosEnCuentas(Transaccion transaccion,
+	private void ejecutarActualizacionDeMontosEnCuentas(Transaccion transaccion,
 			Transaccion transaccionConValorProcentajeDeTransaccion) {
 		try {
 			// obtener informacion de las cuentas a modificar
@@ -100,7 +119,7 @@ public class ServicioCrearTransaccion {
 					- transaccionConValorProcentajeDeTransaccion.getValorTransaccion();
 
 			// no descontar si hay negativos en los saldos
-			this.verificarSaldosNegativos(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen);
+			transaccion.verificarSaldosNegativos(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen);
 
 			Cuenta cuentaDestinoFabricada = new Cuenta(cuentaDestino.getId(), cuentaDestino.getNumeroCuenta(),
 					cuentaDestino.getMontoMaximo(), nuevoMontoParaCuentaDestino, cuentaDestino.getIdCliente(),
@@ -116,23 +135,4 @@ public class ServicioCrearTransaccion {
 		}
 	}
 
-	protected void verificarSaldosNegativos(Double nuevoMontoParaCuentaDestino, Double nuevoMontoParaCuentaOrigen) {
-		if (nuevoMontoParaCuentaDestino < 0 || nuevoMontoParaCuentaOrigen < 0) {
-			throw new ExcepcionDuplicidad(UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
-		}
-	}
-
-	protected void verificarQueSaltoTotalDETransaccionNoSupreLimiteDelMes(Double valorTotalDeTransacciones) {
-		if (valorTotalDeTransacciones > 2000000) {
-			throw new ExcepcionDuplicidad(SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD);
-		}
-	}
-
-	protected BigDecimal conocerValorPorcentajeDeTransaccion(List<Double> cantidadTransaccionesEnTreintaDias){
-		if (cantidadTransaccionesEnTreintaDias.size() > 4) {
-			return BigDecimal.valueOf(1);
-		} else {
-			return BigDecimal.valueOf(0.5);
-		}
-	}
 }

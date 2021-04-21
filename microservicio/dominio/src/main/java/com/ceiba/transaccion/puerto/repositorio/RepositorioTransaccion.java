@@ -1,8 +1,9 @@
 package com.ceiba.transaccion.puerto.repositorio;
 
-import java.util.List;
-
 import com.ceiba.transaccion.modelo.entidad.Transaccion;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface RepositorioTransaccion {
     /**
@@ -24,7 +25,7 @@ public interface RepositorioTransaccion {
      * @param idCuenta
      * @return cantidad de transacciones de una cuenta
      */
-    List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta);
+    List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta, LocalDateTime fechaInicio, LocalDateTime fechaFin);
     
     /**
      * 

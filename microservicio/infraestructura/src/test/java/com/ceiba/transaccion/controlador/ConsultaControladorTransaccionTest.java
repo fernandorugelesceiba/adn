@@ -1,4 +1,4 @@
-package com.ceiba.usuario.controlador;
+package com.ceiba.transaccion.controlador;
 
 import com.ceiba.ApplicationMock;
 import org.junit.Test;
@@ -18,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes= ApplicationMock.class)
-@WebMvcTest(ConsultaControladorUsuario.class)
-public class ConsultaControladorUsuarioTest {
+@WebMvcTest(ConsultaControladorTransacciones.class)
+public class ConsultaControladorTransaccionTest {
 
     @Autowired
     private MockMvc mocMvc;
@@ -27,13 +27,16 @@ public class ConsultaControladorUsuarioTest {
     @Test
     public void listar() throws Exception {
         // arrange
+        Long idCuenta = 1L;
 
         // act - assert
-        mocMvc.perform(get("/usuarios")
+        mocMvc.perform(get("/transacciones/transaccion")
+                .param("idCuenta", String.valueOf(idCuenta))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].nombre", is("test")));
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].idCuentaOrigen", is(2)))
+                .andExpect(jsonPath("$[0].idCuentaDestino", is(1)));
     }
 
 

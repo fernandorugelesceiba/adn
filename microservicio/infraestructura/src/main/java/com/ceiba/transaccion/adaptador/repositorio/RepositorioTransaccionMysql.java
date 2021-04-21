@@ -1,16 +1,18 @@
 package com.ceiba.transaccion.adaptador.repositorio;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.ceiba.infraestructura.jdbc.CustomNamedParameterJdbcTemplate;
+import com.ceiba.infraestructura.jdbc.sqlstatement.SqlStatement;
+import com.ceiba.transaccion.adaptador.dao.MapeoTransaccion;
+import com.ceiba.transaccion.modelo.dto.DtoTransaccion;
+import com.ceiba.transaccion.modelo.entidad.Transaccion;
+import com.ceiba.transaccion.puerto.repositorio.RepositorioTransaccion;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.ceiba.infraestructura.jdbc.CustomNamedParameterJdbcTemplate;
-import com.ceiba.infraestructura.jdbc.sqlstatement.SqlStatement;
-import com.ceiba.transaccion.modelo.entidad.Transaccion;
-import com.ceiba.transaccion.puerto.repositorio.RepositorioTransaccion;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class RepositorioTransaccionMysql implements RepositorioTransaccion {
@@ -48,19 +50,22 @@ public class RepositorioTransaccionMysql implements RepositorioTransaccion {
 	}
 	
 	@Override
-	public List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta) {
+	public List<Double> obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(Long idCuenta, LocalDateTime fechaInicio, LocalDateTime fechaFin) {
 		MapSqlParameterSource paramSource = new MapSqlParameterSource();
 		paramSource.addValue("idCuentaOrigen", idCuenta);
+		paramSource.addValue("fechaInicio", fechaInicio);
+		paramSource.addValue("fechaFin", fechaFin);
 
-		String resultado = this.customNamedParameterJdbcTemplate.getNamedParameterJdbcTemplate()
-				.queryForObject(sqlObtenerCantidadDeTransaccionesSegunCuentaEnElMes, paramSource, String.class);
-		
+		List<DtoTransaccion> resultado =  this.customNamedParameterJdbcTemplate.getNamedParameterJdbcTemplate().query(sqlObtenerCantidadDeTransaccionesSegunCuentaEnElMes, paramSource, new MapeoTransaccion());
 		List<Double> listaValoresDeTransaccion = new ArrayList<>();
-		String[] valoresDeTransaccion = resultado.split(",");
-		for(String valor : valoresDeTransaccion) {
-			listaValoresDeTransaccion.add(new BigDecimal(valor.length() > 0 ? valor.length() : 0).doubleValue());
+
+		if(!resultado.isEmpty()){
+			for(DtoTransaccion transaccion : resultado) {
+				Double valorDouble = new BigDecimal(transaccion.getValorTransaccion()).doubleValue();
+				listaValoresDeTransaccion.add(valorDouble);
+			}
 		}
-		
+
 		return listaValoresDeTransaccion;
 	}
 
