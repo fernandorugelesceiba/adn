@@ -31,13 +31,13 @@ public class ComandoControladorCuentaTest {
     @Test
     public void crear() throws Exception {
         // arrange
-        ComandoCuenta cuenta = new ComandoCuentaTestDataBuilder().build();
+        ComandoCuenta cuenta = new ComandoCuentaTestDataBuilder().conFechaValida("2016-03-04 11:30").build();
 
         // act - assert
         mocMvc.perform(post("/cuentas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(cuenta)))
-                .andExpect(status().isOk()).andExpect(content().json("{'valor': 3}"));
+                .andExpect(status().isOk()).andExpect(content().json("{'valor': 4}"));
     }
 
     @Test

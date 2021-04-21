@@ -32,7 +32,7 @@ public class ConsultaControladorCuentaTest {
         mocMvc.perform(get("/cuentas")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$", hasSize(3)));
     }
 
 

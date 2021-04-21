@@ -1,5 +1,7 @@
 package com.ceiba.transaccion.adaptador.repositorio;
 
+import com.ceiba.cuenta.adaptador.dao.MapeoCuenta;
+import com.ceiba.cuenta.modelo.dto.DtoCuenta;
 import com.ceiba.infraestructura.jdbc.CustomNamedParameterJdbcTemplate;
 import com.ceiba.infraestructura.jdbc.sqlstatement.SqlStatement;
 import com.ceiba.transaccion.adaptador.dao.MapeoTransaccion;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,11 +45,24 @@ public class RepositorioTransaccionMysql implements RepositorioTransaccion {
 	
 	@Override
 	public boolean verificarFechaValidesEnCuenta(Long idCuenta) {
+		boolean esValido = true;
 		MapSqlParameterSource paramSource = new MapSqlParameterSource();
 		paramSource.addValue("idCuenta", idCuenta);
 
-		return this.customNamedParameterJdbcTemplate.getNamedParameterJdbcTemplate()
-				.queryForObject(sqlVerificarFechaValidesEnCuenta, paramSource, Boolean.class);
+		List<DtoCuenta> resultado = this.customNamedParameterJdbcTemplate.getNamedParameterJdbcTemplate()
+				.query(sqlVerificarFechaValidesEnCuenta, paramSource, new MapeoCuenta());
+
+		if(!resultado.isEmpty()){
+			LocalDateTime fechaCreacionRegistro = resultado.get(0).getFechaCreacion();
+			LocalDateTime fechaActual = LocalDateTime.now();
+			LocalDateTime tempDateTime = LocalDateTime.from(fechaCreacionRegistro);
+			long diasDiferencia = tempDateTime.until( fechaActual, ChronoUnit.DAYS );
+
+			if(diasDiferencia <= 0){
+				esValido = false;
+			}
+		}
+		return esValido;
 	}
 	
 	@Override
@@ -61,7 +77,7 @@ public class RepositorioTransaccionMysql implements RepositorioTransaccion {
 
 		if(!resultado.isEmpty()){
 			for(DtoTransaccion transaccion : resultado) {
-				Double valorDouble = new BigDecimal(transaccion.getValorTransaccion()).doubleValue();
+				Double valorDouble = BigDecimal.valueOf(transaccion.getValorTransaccion()).doubleValue();
 				listaValoresDeTransaccion.add(valorDouble);
 			}
 		}

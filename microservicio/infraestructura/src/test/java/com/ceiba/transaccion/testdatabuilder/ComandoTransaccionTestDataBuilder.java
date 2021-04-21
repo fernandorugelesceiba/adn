@@ -17,8 +17,8 @@ public class ComandoTransaccionTestDataBuilder {
     private Short estado;
 
     public ComandoTransaccionTestDataBuilder() {
-        id = 1L;
-        idCuentaOrigen = 1L;
+        id = 3L;
+        idCuentaOrigen = 3L;
         idCuentaDestino = 2L;
         valorTransaccion = 200.0;
         porcentajeDescuento = 0.5;
