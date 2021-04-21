@@ -39,7 +39,7 @@ public class ServicioCrearTransaccion {
 
 		Long idTransaccion = this.repositorioTransaccion.crear(transaccion);
 		// actualizar los nuevos montos de los saldos
-		this.ejecutarActualizacionDeMontosEnCuentas(transaccion, transaccion);
+		this.ejecutarActualizacionDeMontosEnCuentas(transaccion);
 		return idTransaccion;
 	}
 
@@ -106,17 +106,16 @@ public class ServicioCrearTransaccion {
 		return this.repositorioTransaccion.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(idCuenta, fechaInicio, fechaFin);
 	}
 
-	private void ejecutarActualizacionDeMontosEnCuentas(Transaccion transaccion,
-			Transaccion transaccionConValorProcentajeDeTransaccion) {
+	private void ejecutarActualizacionDeMontosEnCuentas(Transaccion transaccion) {
 		try {
 			// obtener informacion de las cuentas a modificar
 			DtoCuenta cuentaDestino = this.repositorioCuenta.obtenerCuentaSegunId(transaccion.getIdCuentaDestino()).get(0);
 			DtoCuenta cuentaOrigen = this.repositorioCuenta.obtenerCuentaSegunId(transaccion.getIdCuentaOrigen()).get(0);
 
 			Double nuevoMontoParaCuentaDestino = cuentaDestino.getMonto()
-					+ transaccionConValorProcentajeDeTransaccion.getValorTransaccion();
+					+ transaccion.getValorTransaccion();
 			Double nuevoMontoParaCuentaOrigen = cuentaOrigen.getMonto()
-					- transaccionConValorProcentajeDeTransaccion.getValorTransaccion();
+					- transaccion.getValorTransaccion();
 
 			// no descontar si hay negativos en los saldos
 			transaccion.verificarSaldosNegativos(nuevoMontoParaCuentaDestino, nuevoMontoParaCuentaOrigen);

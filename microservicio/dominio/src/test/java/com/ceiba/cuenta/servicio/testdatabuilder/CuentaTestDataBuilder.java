@@ -1,9 +1,9 @@
 package com.ceiba.cuenta.servicio.testdatabuilder;
 
-import java.time.LocalDateTime;
-
 import com.ceiba.cuenta.modelo.dto.DtoCuenta;
 import com.ceiba.cuenta.modelo.entidad.Cuenta;
+
+import java.time.LocalDateTime;
 
 public class CuentaTestDataBuilder {
 
@@ -30,4 +30,15 @@ public class CuentaTestDataBuilder {
 	public DtoCuenta buildDto() {
 		return new DtoCuenta( id,  numeroCuenta,  montoMaximo,  monto,  idCliente,  fechaCreacion);
 	}
+
+	public CuentaTestDataBuilder conId(Long id) {
+		this.id = id;
+		return this;
+	}
+
+	public CuentaTestDataBuilder conMonto(Double monto) {
+		this.monto = monto;
+		return this;
+	}
+
 }

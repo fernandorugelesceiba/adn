@@ -1,7 +1,9 @@
 package com.ceiba.transaccion.servicio;
 
 import com.ceiba.BasePrueba;
+import com.ceiba.cuenta.modelo.dto.DtoCuenta;
 import com.ceiba.cuenta.puerto.repositorio.RepositorioCuenta;
+import com.ceiba.cuenta.servicio.testdatabuilder.CuentaTestDataBuilder;
 import com.ceiba.dominio.excepcion.ExcepcionDuplicidad;
 import com.ceiba.transaccion.modelo.entidad.Transaccion;
 import com.ceiba.transaccion.puerto.repositorio.RepositorioTransaccion;
@@ -20,6 +22,7 @@ public class ServicioCrearTransaccionTest {
 	private static final String LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA = "Lo sentimos por el momento no se pueden realizar transacciones, las cuentas deben llevar mas de un dia de creadas ya que por temas de validacion la entidad lo exige";
 	private static final String EL_VALOR_DE_LAS_TRANSACCIONES_REALIZADAS_EN_ESTE_MES_SUPERAN_EL_MONTO_MAXIMO_DE_LA_CUENTA = "El monto total de transacciones supera el monto maximo permito";
 	private static final String SUS_TRANSACCIONES_SUPERAN_EL_MONTO_MAXIMO_ESTABLECIDO_POR_LA_ENTIDAD = "El total de sus transacciones en este mes, superan el monto permitido impuesto por la entidad";
+	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
 
 	@Test
 	public void seEsperaUnFalloVerificandoQueLaCuentaLleveUnDiaDeCreadaTest() {
@@ -164,4 +167,40 @@ public class ServicioCrearTransaccionTest {
 		Assert.assertEquals(nuevoPorcentajeEsperado, transaccion.getPorcentajeDescuento());
 	}
 
+	@Test
+	public void seEsperaUnFalloEnCalcularSaldosNegativosDuranteCreacionDeTransaccionTest() {
+		// arrange
+		Transaccion transaccion = new TransaccionTestDataBuilder().conFechaValida("2016-03-04 11:30").conValorTransaccion(10D).build();
+		DtoCuenta cuentaOrigen = new CuentaTestDataBuilder().conId(2L).conMonto(1D).buildDto();
+		DtoCuenta cuentaDestino = new CuentaTestDataBuilder().conId(3L).conMonto(1D).buildDto();
+		List<DtoCuenta> listaCuentaOrigen = new ArrayList<>();
+		listaCuentaOrigen.add(cuentaOrigen);
+		List<DtoCuenta> listaCuentaDestino = new ArrayList<>();
+		listaCuentaDestino.add(cuentaDestino);
+
+		Long idTransaccionCreada = 2L;
+		LocalDateTime fecha = transaccion.getFechaCreacion();
+		LocalDateTime fechaInicio = fecha.with(TemporalAdjusters.firstDayOfMonth());
+		LocalDateTime fechaFin = fecha.with(TemporalAdjusters.lastDayOfMonth());
+		List<Double> cantidadTransaccionesMesual = new ArrayList<>();
+		cantidadTransaccionesMesual.add(100D);
+		Double montoTransaccionPermitida = 250D;
+
+		RepositorioTransaccion repositorioTransaccionMock = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuentaMock = Mockito.mock(RepositorioCuenta.class);
+		ServicioCrearTransaccion servicioCrearTransaccionMock = Mockito.mock(ServicioCrearTransaccion.class);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaOrigen())).thenReturn(true);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaDestino())).thenReturn(true);
+		Mockito.when(repositorioTransaccionMock.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen(),fechaInicio,fechaFin)).thenReturn(cantidadTransaccionesMesual);
+		Mockito.when(repositorioTransaccionMock.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaOrigen())).thenReturn(montoTransaccionPermitida);
+		Mockito.when(servicioCrearTransaccionMock.ejecutar(transaccion)).thenReturn(idTransaccionCreada);
+		Mockito.when(repositorioCuentaMock.obtenerCuentaSegunId(transaccion.getIdCuentaDestino())).thenReturn(listaCuentaDestino);
+		Mockito.when(repositorioCuentaMock.obtenerCuentaSegunId(transaccion.getIdCuentaOrigen())).thenReturn(listaCuentaOrigen);
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccionMock,
+				repositorioCuentaMock);
+
+		// act - assert
+		BasePrueba.assertThrows(() -> servicioCrearTransaccion.ejecutar(transaccion),
+				ExcepcionDuplicidad.class, UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION);
+	}
 }

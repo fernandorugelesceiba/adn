@@ -35,4 +35,9 @@ public class TransaccionTestDataBuilder {
 		this.fechaCreacion = LocalDateTime.parse(fecha, formatter);
 		return this;
 	}
+
+	public TransaccionTestDataBuilder conValorTransaccion(Double valorTransaccion) {
+		this.valorTransaccion = valorTransaccion;
+		return this;
+	}
 }
