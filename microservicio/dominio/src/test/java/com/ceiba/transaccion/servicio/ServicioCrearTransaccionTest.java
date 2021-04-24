@@ -2,6 +2,7 @@ package com.ceiba.transaccion.servicio;
 
 import com.ceiba.BasePrueba;
 import com.ceiba.cuenta.modelo.dto.DtoCuenta;
+import com.ceiba.cuenta.modelo.entidad.Cuenta;
 import com.ceiba.cuenta.puerto.repositorio.RepositorioCuenta;
 import com.ceiba.cuenta.servicio.testdatabuilder.CuentaTestDataBuilder;
 import com.ceiba.dominio.excepcion.ExcepcionDuplicidad;
@@ -240,5 +241,60 @@ public class ServicioCrearTransaccionTest {
 		// act - assert
 		BasePrueba.assertThrows(() -> servicioCrearTransaccion.ejecutar(transaccion),
 				NullPointerException.class, OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION);
+	}
+
+
+	@Test
+	public void seEsperaQueLaTransaccionSeCreeConExito() {
+		// arrange
+		Transaccion transaccion = new TransaccionTestDataBuilder().conFechaValida("2016-03-04 11:30").conValorTransaccion(10D).build();
+		DtoCuenta cuentaOrigen = new CuentaTestDataBuilder().conId(2L).conMonto(200D).buildDto();
+		DtoCuenta cuentaDestino = new CuentaTestDataBuilder().conId(3L).conMonto(100D).buildDto();
+		List<DtoCuenta> listaCuentaOrigen = new ArrayList<>();
+		listaCuentaOrigen.add(cuentaOrigen);
+		List<DtoCuenta> listaCuentaDestino = new ArrayList<>();
+		listaCuentaDestino.add(cuentaDestino);
+
+		Long idTransaccionCreada = 2L;
+		LocalDateTime fecha = transaccion.getFechaCreacion();
+		LocalDateTime fechaInicio = fecha.with(TemporalAdjusters.firstDayOfMonth());
+		LocalDateTime fechaFin = fecha.with(TemporalAdjusters.lastDayOfMonth());
+		List<Double> cantidadTransaccionesMesual = new ArrayList<>();
+		cantidadTransaccionesMesual.add(100D);
+		Double montoTransaccionPermitida = 250D;
+		Double nuevoMontoParaCuentaDestino = 20D;
+		Double nuevoMontoParaCuentaOrigen = 10D;
+
+		Cuenta cuentaDestinoFabricada = new Cuenta(cuentaDestino.getId(), cuentaDestino.getNumeroCuenta(),
+				cuentaDestino.getMontoMaximo(), nuevoMontoParaCuentaDestino, cuentaDestino.getIdCliente(),
+				cuentaDestino.getFechaCreacion());
+		Cuenta cuentaOrigenFabricada = new Cuenta(cuentaOrigen.getId(), cuentaOrigen.getNumeroCuenta(),
+				cuentaOrigen.getMontoMaximo(), nuevoMontoParaCuentaOrigen, cuentaOrigen.getIdCliente(),
+				cuentaOrigen.getFechaCreacion());
+
+		RepositorioTransaccion repositorioTransaccionMock = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuentaMock = Mockito.mock(RepositorioCuenta.class);
+		ServicioCrearTransaccion servicioCrearTransaccionMock = Mockito.mock(ServicioCrearTransaccion.class);
+		Transaccion transaccionMock = Mockito.mock(Transaccion.class);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaOrigen())).thenReturn(true);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaDestino())).thenReturn(true);
+		Mockito.when(repositorioTransaccionMock.obtenerCantidadDeTransaccionesSegunCuentaEnElMesYMontoTotal(transaccion.getIdCuentaOrigen(),fechaInicio,fechaFin)).thenReturn(cantidadTransaccionesMesual);
+		Mockito.when(repositorioTransaccionMock.obtenerElMontoMaximoDeUnCuentaSegunSuId(transaccion.getIdCuentaOrigen())).thenReturn(montoTransaccionPermitida);
+		Mockito.when(servicioCrearTransaccionMock.ejecutar(transaccion)).thenReturn(idTransaccionCreada);
+		Mockito.when(repositorioCuentaMock.obtenerCuentaSegunId(transaccion.getIdCuentaDestino())).thenReturn(listaCuentaDestino);
+		Mockito.when(repositorioCuentaMock.obtenerCuentaSegunId(transaccion.getIdCuentaOrigen())).thenReturn(listaCuentaOrigen);
+		Mockito.doNothing().when(transaccionMock).verificarSaldosNegativos(nuevoMontoParaCuentaDestino,nuevoMontoParaCuentaOrigen);
+
+		Mockito.doNothing().when(repositorioCuentaMock).actualizar(cuentaDestinoFabricada);
+		Mockito.doNothing().when(repositorioCuentaMock).actualizar(cuentaOrigenFabricada);
+
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccionMock,
+				repositorioCuentaMock);
+
+		// act
+		servicioCrearTransaccion.ejecutar(transaccion);
+
+		//assert
+		Assert.assertEquals(cuentaDestinoFabricada.getMonto(), nuevoMontoParaCuentaDestino);
 	}
 }
