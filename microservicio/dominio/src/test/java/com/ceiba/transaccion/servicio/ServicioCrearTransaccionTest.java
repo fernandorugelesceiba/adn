@@ -27,13 +27,29 @@ public class ServicioCrearTransaccionTest {
 	private static final String UNO_DE_LOS_VALORES_RESULTO_NEGATIVO_NO_POSIBLE_CONTINUAR_CON_TRANSACCION = "Uno de los saldos resulto negativo, no se puede continuar con el proceso";
 
 	@Test
-	public void seEsperaUnFalloVerificandoQueLaCuentaLleveUnDiaDeCreadaTest() {
+	public void seEsperaUnFalloVerificandoQueLaCuentaOrigenLleveUnDiaDeCreadaTest() {
 		// arrange
 		Transaccion transaccion = new TransaccionTestDataBuilder().build();
 		RepositorioTransaccion repositorioTransaccionMock = Mockito.mock(RepositorioTransaccion.class);
 		RepositorioCuenta repositorioCuentaMock = Mockito.mock(RepositorioCuenta.class);
 		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaOrigen())).thenReturn(false);
 		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaDestino())).thenReturn(true);
+		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccionMock,
+				repositorioCuentaMock);
+
+		// act - assert
+		BasePrueba.assertThrows(() -> servicioCrearTransaccion.ejecutar(transaccion),
+				ExcepcionDuplicidad.class, LA_TRANSACCION_NO_SE_REALIZA_POR_CUENTA_RECIEN_CREADA);
+	}
+
+	@Test
+	public void seEsperaUnFalloVerificandoQueLaCuentaDestinoLleveUnDiaDeCreadaTest() {
+		// arrange
+		Transaccion transaccion = new TransaccionTestDataBuilder().build();
+		RepositorioTransaccion repositorioTransaccionMock = Mockito.mock(RepositorioTransaccion.class);
+		RepositorioCuenta repositorioCuentaMock = Mockito.mock(RepositorioCuenta.class);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaOrigen())).thenReturn(true);
+		Mockito.when(repositorioTransaccionMock.verificarFechaValidesEnCuenta(transaccion.getIdCuentaDestino())).thenReturn(false);
 		ServicioCrearTransaccion servicioCrearTransaccion = new ServicioCrearTransaccion(repositorioTransaccionMock,
 				repositorioCuentaMock);
 

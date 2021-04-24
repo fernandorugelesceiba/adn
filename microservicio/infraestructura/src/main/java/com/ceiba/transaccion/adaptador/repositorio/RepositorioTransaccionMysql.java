@@ -76,17 +76,10 @@ public class RepositorioTransaccionMysql implements RepositorioTransaccion {
 		List<Double> listaValoresDeTransaccion = new ArrayList<>();
 
 		if(!resultado.isEmpty()){
-			resultado.add(new DtoTransaccion(1L,
-					1L,
-					2L,
-					0D,
-					0D,
-					LocalDateTime.now(),(short)1,"", ""));
-		}
-
-		for(DtoTransaccion transaccion : resultado) {
-			Double valorDouble = BigDecimal.valueOf(transaccion.getValorTransaccion()).doubleValue();
-			listaValoresDeTransaccion.add(valorDouble);
+			for(DtoTransaccion transaccion : resultado) {
+				Double valorDouble = BigDecimal.valueOf(transaccion.getValorTransaccion()).doubleValue();
+				listaValoresDeTransaccion.add(valorDouble);
+			}
 		}
 
 		return listaValoresDeTransaccion;

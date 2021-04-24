@@ -14,11 +14,12 @@ public interface RepositorioTransaccion {
     Long crear(Transaccion transaccion);
 
     /**
-     * 
      * @param idCuenta
      * @return si la fecha de creacion de una cuenta lleva mas de un dia activa, es valida
      */
-    boolean verificarFechaValidesEnCuenta(Long idCuenta);
+    default boolean verificarFechaValidesEnCuenta(Long idCuenta) {
+        return false;
+    }
 
     /**
      * 
