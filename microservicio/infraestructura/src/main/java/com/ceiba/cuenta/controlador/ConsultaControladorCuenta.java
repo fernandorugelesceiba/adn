@@ -1,18 +1,16 @@
 package com.ceiba.cuenta.controlador;
 
-import java.util.List;
-
+import com.ceiba.cuenta.consulta.ManejadorListarCuentas;
+import com.ceiba.cuenta.consulta.ManejadorListarCuentasPorCliente;
+import com.ceiba.cuenta.modelo.dto.DtoCuenta;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ceiba.cuenta.consulta.ManejadorListarCuentas;
-import com.ceiba.cuenta.consulta.ManejadorListarCuentasPorCliente;
-import com.ceiba.cuenta.modelo.dto.DtoCuenta;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.List;
 
 @RestController
 @RequestMapping("/cuentas")
@@ -35,8 +33,8 @@ public class ConsultaControladorCuenta {
 	
 	@GetMapping("id")
 	@ApiOperation("Listar cuentas segun el cliente")
-	public List<DtoCuenta> listarCuentasPorCliente(@RequestParam("idCuenta") Long idCuenta) {
-		return this.manejadorListarCuentasPorCliente.ejecutar(idCuenta);
+	public List<DtoCuenta> listarCuentasPorCliente(@RequestParam("idCliente") Long idCliente) {
+		return this.manejadorListarCuentasPorCliente.ejecutar(idCliente);
 	}
 
 }

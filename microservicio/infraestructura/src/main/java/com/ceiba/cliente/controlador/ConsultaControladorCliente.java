@@ -1,18 +1,16 @@
 package com.ceiba.cliente.controlador;
 
-import java.util.List;
-
+import com.ceiba.cliente.consulta.ManejadorClientePorDocumentoYTipoDocumento;
+import com.ceiba.cliente.consulta.ManejadorListarClientes;
+import com.ceiba.cliente.modelo.dto.DtoCliente;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ceiba.cliente.consulta.ManejadorClientePorDocumentoYTipoDocumento;
-import com.ceiba.cliente.consulta.ManejadorListarClientes;
-import com.ceiba.cliente.modelo.dto.DtoCliente;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.List;
 
 @RestController
 @RequestMapping("/clientes")
@@ -33,7 +31,7 @@ public class ConsultaControladorCliente {
         return this.manejadorListarClientes.ejecutar();
     }
     
-    @GetMapping("/id")
+    @GetMapping("id")
     @ApiOperation("Verificar las credencias del cliente")
     public List<DtoCliente> verificarCredencialesDelCliente(@RequestParam("tipoDocumento") Short tipoDocumento, @RequestParam("numeroDocumento") String numeroDocumento) {
         return this.manejadorClientePorDocumentoYTipoDocumento.ejecutar(tipoDocumento, numeroDocumento);

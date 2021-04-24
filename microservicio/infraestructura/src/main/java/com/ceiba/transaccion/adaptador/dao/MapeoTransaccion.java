@@ -1,13 +1,12 @@
 package com.ceiba.transaccion.adaptador.dao;
 
+import com.ceiba.infraestructura.jdbc.MapperResult;
+import com.ceiba.transaccion.modelo.dto.DtoTransaccion;
+import org.springframework.jdbc.core.RowMapper;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-
-import org.springframework.jdbc.core.RowMapper;
-
-import com.ceiba.infraestructura.jdbc.MapperResult;
-import com.ceiba.transaccion.modelo.dto.DtoTransaccion;
 
 public class MapeoTransaccion implements RowMapper<DtoTransaccion>, MapperResult {
 
@@ -19,10 +18,12 @@ public class MapeoTransaccion implements RowMapper<DtoTransaccion>, MapperResult
         Long idCuentaDestino = resultSet.getLong("id_cuenta_destino");
         Double valorTransaccion = resultSet.getDouble("valor_transaccion");
         Double porcentajeDescuento = resultSet.getDouble("porcentaje_descuento");
+        String numeroCuentaOrigen = resultSet.getString("numeroCuentaOrigen");
+        String numeroCuentaDestino = resultSet.getString("numeroCuentaDestino");
         LocalDateTime fechaCreacion = extraerLocalDateTime(resultSet, "fecha_creacion");
         Short estado = resultSet.getShort("estado");
-        
-        return new DtoTransaccion(id, idCuentaOrigen, idCuentaDestino, valorTransaccion, porcentajeDescuento, fechaCreacion, estado);
+
+        return new DtoTransaccion(id, idCuentaOrigen, idCuentaDestino, valorTransaccion, porcentajeDescuento, fechaCreacion, estado, numeroCuentaOrigen, numeroCuentaDestino);
     }
 
 }

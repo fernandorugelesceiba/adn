@@ -15,4 +15,6 @@ public class DtoTransaccion {
 	private Double porcentajeDescuento;
 	private LocalDateTime fechaCreacion;
 	private Short estado;
+	private String numeroCuentaOrigen;
+	private String numeroCuentaDestino;
 }

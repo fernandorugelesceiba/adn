@@ -107,6 +107,7 @@ public class ServicioCrearTransaccion {
 	}
 
 	private void ejecutarActualizacionDeMontosEnCuentas(Transaccion transaccion) {
+		try {
 			// obtener informacion de las cuentas a modificar
 			DtoCuenta cuentaDestino = this.repositorioCuenta.obtenerCuentaSegunId(transaccion.getIdCuentaDestino()).get(0);
 			DtoCuenta cuentaOrigen = this.repositorioCuenta.obtenerCuentaSegunId(transaccion.getIdCuentaOrigen()).get(0);
@@ -128,6 +129,9 @@ public class ServicioCrearTransaccion {
 					cuentaOrigen.getFechaCreacion());
 			this.repositorioCuenta.actualizar(cuentaDestinoFabricada);
 			this.repositorioCuenta.actualizar(cuentaOrigenFabricada);
+		}catch (NullPointerException e){
+			throw new NullPointerException(OCURRIO_UN_ERROR_DURANTE_EL_PROCESO_DE_ACTUALIZACION);
 		}
+	}
 
 }
