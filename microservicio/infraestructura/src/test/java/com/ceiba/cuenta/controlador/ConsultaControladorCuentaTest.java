@@ -38,7 +38,7 @@ public class ConsultaControladorCuentaTest {
         Long idCliente = 1L;
 
         // act - assert
-        mocMvc.perform(get("/cuentas/")
+        mocMvc.perform(get("/cuentas/id")
                 .param("idCliente", String.valueOf(idCliente))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
