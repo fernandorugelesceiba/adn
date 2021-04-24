@@ -32,5 +32,15 @@ public class ConsultaControladorCuentaTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    public void listarCuentasPorCliente() throws Exception {
+        // arrange
+        Long idCliente = 1L;
 
+        // act - assert
+        mocMvc.perform(get("/cuentas/")
+                .param("idCliente", String.valueOf(idCliente))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
 }
